@@ -63,44 +63,38 @@ static PART2_HASH: BoundedHash = BoundedHash {
 //
 //
 fn str_to_digit(input: &str, bounded_hash: &'static BoundedHash) -> u64 {
-    if input.len() == 0 {
-      return 0
-    }
-    let ascii = input.as_bytes();
-    let len = ascii.len();
+    let len = input.len();
     let mut output = Vec::with_capacity(len);
     for start_idx in 0..len {
-      for window_len in 0..bounded_hash.max_len {
-        let end_idx = start_idx + window_len + 1;
-        if end_idx > len {
-          break
-        } 
-        if let Some(val) = bounded_hash.map.get(&input[start_idx..end_idx]) {
-          output.push(*val);
-          break;
+        for window_len in 1..=bounded_hash.max_len {
+            let end_idx = start_idx + window_len;
+            if let Some(slice) = &input.get(start_idx..end_idx) {
+                if let Some(val) = bounded_hash.map.get(slice) {
+                    output.push(*val);
+                    break;
+                }
+            } else {
+                break;
+            }
         }
-      }
     }
-    let output_len = output.len();
-    let first : u64 = output[0].into();
-    let last : u64 = output[output_len - 1].into();
+    let first: u64 = output[0].into();
+    let last: u64 = output[output.len() - 1].into();
     10 * first + last
 }
-
-
 
 fn main() {
     let input = std::fs::read_to_string("src/input.txt").expect("Input file not found");
     // Part 1
-    let mut sum1: u64 = 0;
-    for line in input.lines() {
-      sum1+= str_to_digit(&line, &PART1_HASH);
-    }
+    let sum1: u64 = input
+        .lines()
+        .map(|line: &str| str_to_digit(line, &PART1_HASH))
+        .sum();
     println!("Part 1: {}", sum1);
     // Part 2
-    let mut sum2: u64 = 0;
-    for line in input.lines() {
-      sum2+= str_to_digit(&line, &PART2_HASH);
-    }
+    let sum2: u64 = input
+        .lines()
+        .map(|line: &str| str_to_digit(line, &PART2_HASH))
+        .sum();
     println!("Part 2: {}", sum2);
 }
